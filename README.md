@@ -29,4 +29,4 @@ Search for first 100 buffer-overflows in a Repository with 50 to 100 Stars:
 
 * `./ghminer.py --bo --first=100 --min_stars=50 --max_stars=100 --output bo_repos.md`
 
-*PS: We can only sen a limited amout of requests to the GitHub API (20 per minute) which causes some delays*
+*PS: We can only send a limited amout of requests to the GitHub API (20 per minute) which causes some delays*
