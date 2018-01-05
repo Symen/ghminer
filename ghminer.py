@@ -222,7 +222,7 @@ def analyze_boc_repos():
     boc_repos = dict()
     cur_vuln_type = VulnType.BufferOverflow
     language = "c"
-    graphql_search_query = 'language:' + language + ' stars:' + str(args.min_stars) + '..' + str(args.max_stars)
+    graphql_search_query = 'language:' + language + ' stars:' + str(args.min_stars) + '..' + str(args.max_stars) + ' pushed:>' + str(args.last_accessed)
     i = 0
 
     repos = get_repos(graphql_search_query)
@@ -336,6 +336,9 @@ def init_arguments():
 
     parser.add_argument('--max_stars', type=int, nargs='?', default=50,
                         help='Max number of stars the repository should have')
+
+    parser.add_argument('--last_accessed', type=str, nargs='?', default='2017-01-08',
+                        help='Date since the repo was last accessed (format: YYYY-MM-DD)')
 
     parser.add_argument('--output', type=str, nargs='?', default='results.md',
                         help='Name of the output file (markdown)')
