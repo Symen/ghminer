@@ -1,4 +1,4 @@
-#!/usr/bin/python3.5
+#!/usr/bin/python3
 
 import argparse
 import urllib.request
@@ -31,6 +31,9 @@ NO_CRITICAL_BO_FUNCTIONS = {"c" : ['printf("']}
 CRITICAL_XSS_FUNCTIONS = {"php": ["strip_tags(", "addslashes\((", "$_POST", "$_GET"],
                           "html" : ["input\("], 
                           "javascript" : ["eval\((", "document\.write"]}
+NOT_CRITICAL_XSS_FUNCTIONS = {"php" : [""],
+                              "html" : [""],
+                              "javascript": [""]}
 CRITICAL_SQLI_FUNCTIONS = {"php" : ["mysql_query("]}
 NOT_CRITICAL_SQLI_FUNCTIONS = {"php" : ["isset", "curl_exec", "drush_shell_exec"]}
 
