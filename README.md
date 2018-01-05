@@ -6,10 +6,7 @@ GHMiner checks for critical patterns in GitHub-Repositories.
 ## Setup
 Since GHMiner is using the GitHub API it is necessary to generate a personal access token ([HowTo](https://help.github.com/articles/creating-a-personal-access-token-for-the-command-line/)).
 
-Add your username and the new access token to ghminer:
-
-* `sed -i -- 's/USERNAME/<UserName>/g' ghminer.py`
-* `sed -i -- 's/API_TOKEN/<NewAccessToken>/g' ghminer.py`
+Copy the file `config-sample.py` as `config.py` and replace the username and access token in it.
 
 Make ghminer executable:
 

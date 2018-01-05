@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 
 import argparse
 import urllib.request
@@ -7,13 +7,13 @@ import requests
 import base64
 import json
 import time
+import sys
 from enum import Enum
+import config
 
 GIT_API_URL="https://api.github.com/"
 GIT_API_URL_GRAPHQL = GIT_API_URL + 'graphql'
 GIT_API_URL_SEACH = GIT_API_URL + 'search'
-github_username = "USERNAME"
-github_api_token = "API_TOKEN"
 
 class VulnType(Enum):
     BufferOverflow = 1
@@ -27,7 +27,7 @@ parser = argparse.ArgumentParser(description='GHMiner checks for critical patter
 args = None
 
 CRITICAL_BO_FUNCTIONS = {"c" : ["strcpy(", "strcat(", "sprintf(", "printf(", "sprintf(", "snprintf(", "memcpy("]}
-NO_CRITICAL_BO_FUNCTIONS = {"c" : ['printf("']}
+NOT_CRITICAL_BO_FUNCTIONS = {"c" : ['printf("']}
 CRITICAL_XSS_FUNCTIONS = {"php": ["strip_tags(", "addslashes\((", "$_POST", "$_GET"],
                           "html" : ["input\("], 
                           "javascript" : ["eval\((", "document\.write"]}
@@ -88,7 +88,7 @@ def get_repos(search_query:str):
             '}'
             }
 
-    headers = {'Authorization': 'token %s' % github_api_token}
+    headers = {'Authorization': 'token %s' % config.github_api_token}
     repos_response = requests.post(url=GIT_API_URL_GRAPHQL, json=json_query, headers=headers)
     repos_json = json.loads(repos_response.text)
     repos = dict()
@@ -105,7 +105,7 @@ def filter_fp(search_language, x):
 
     if cur_vuln_type is VulnType.BufferOverflow:
         c_map = CRITICAL_BO_FUNCTIONS
-        fp_map = NO_CRITICAL_BO_FUNCTIONS
+        fp_map = NOT_CRITICAL_BO_FUNCTIONS
     elif cur_vuln_type is VulnType.XSS:
         c_map = CRITICAL_XSS_FUNCTIONS
         fp_map = NOT_CRITICAL_XSS_FUNCTIONS
@@ -129,7 +129,7 @@ def search_in_code(search_repo, search_query, search_language):
 
     try:
         request = urllib.request.Request(url)
-        base64string = base64.encodestring(("%s/token:%s" % (github_username, github_api_token)).encode()).decode().replace("\n","")
+        base64string = base64.encodestring(("%s/token:%s" % (config.github_username, config.github_api_token)).encode()).decode().replace("\n","")
         request.add_header("Authorization", "Basic %s" % base64string)
         request.add_header("Accept", "application/vnd.github.v3.text-match+json")
         result = urllib.request.urlopen(request)
@@ -174,7 +174,7 @@ def search_open_bugs(search_repo, search_query, search_language):
     print("Search open bugs: " + url + " ...")
 
     request = urllib.request.Request(url)
-    base64string = base64.encodestring(("%s/token:%s" % (github_username, github_api_token)).encode()).decode().replace("\n", "")
+    base64string = base64.encodestring(("%s/token:%s" % (config.github_username, config.github_api_token)).encode()).decode().replace("\n", "")
     request.add_header("Authorization", "Basic %s" % base64string)
     result = urllib.request.urlopen(request)
     result_json = json.loads(result.read().decode("utf-8"))
@@ -222,7 +222,7 @@ def analyze_boc_repos():
     boc_repos = dict()
     cur_vuln_type = VulnType.BufferOverflow
     language = "c"
-    graphql_search_query = 'language:' + language + ' stars:' + str(args.min_stars) + '..' + str(args.max_stars)
+    graphql_search_query = 'language:' + language + ' stars:' + str(args.min_stars) + '..' + str(args.max_stars) + ' pushed:>' + str(args.last_accessed)
     i = 0
 
     repos = get_repos(graphql_search_query)
@@ -337,8 +337,15 @@ def init_arguments():
     parser.add_argument('--max_stars', type=int, nargs='?', default=50,
                         help='Max number of stars the repository should have')
 
+    parser.add_argument('--last_accessed', type=str, nargs='?', default='2017-01-08',
+                        help='Date since the repo was last accessed (format: YYYY-MM-DD)')
+
     parser.add_argument('--output', type=str, nargs='?', default='results.md',
                         help='Name of the output file (markdown)')
+
+    if len(sys.argv)==1:
+        parser.print_help()
+        sys.exit(1)
 
     args = parser.parse_args()
 
