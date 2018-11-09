@@ -12,6 +12,10 @@ Make ghminer executable:
 
 * `chmod +x ghminer.py`
 
+Install requirements
+
+* `pip install -r requirements`
+
 ## Example Commands 
 
 Display the options of ghminer.py
